@@ -11,12 +11,16 @@ function Success() {
 
   return (
     <div className="grid h-dvh place-items-center px-4 py-12">
-      {transactionId && (
-        <a href={getMobileRedirectUrl(transactionId)} className="flex items-center gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Return to app
-        </a>
-      )}
+      {transactionId && (() => {
+        const redirectHref = getMobileRedirectUrl(transactionId);
+        if (!redirectHref) return null;
+        return (
+          <a href={redirectHref} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Return to app
+          </a>
+        );
+      })()}
     </div>
   );
 }
