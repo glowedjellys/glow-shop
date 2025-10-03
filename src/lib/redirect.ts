@@ -11,16 +11,22 @@ const ALLOWED_REDIRECT_ORIGINS = [
   "myapp://redirect",    // If your app uses custom scheme
 ];
 
+const ALLOWED_PROTOCOLS = ["https:", "myapp:"]; // Add custom protocols you trust
+
 function isAllowedRedirectUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
+    // Only allow trusted protocols
+    if (!ALLOWED_PROTOCOLS.includes(urlObj.protocol)) {
+      return false;
+    }
     return ALLOWED_REDIRECT_ORIGINS.some(origin => {
       // Compare protocol+host (and port, if needed)
       // For standard http(s), compare origin
       if (origin.startsWith("http")) {
         return urlObj.origin === origin;
       }
-      // For custom scheme, compare protocol+pathname
+      // For custom scheme, compare protocol+hostname (or as per your desired logic)
       if (origin.includes("://")) {
         return `${urlObj.protocol}//${urlObj.hostname}` === origin;
       }
@@ -39,7 +45,16 @@ export function getMobileRedirectUrl(transactionId: string): string | null {
     // Optionally report/log here if desired
     return null;
   }
-  return `${redirectUrl}?transactionId=${encodeURIComponent(transactionId)}`;
+  const fullUrl = `${redirectUrl}?transactionId=${encodeURIComponent(transactionId)}`;
+  try {
+    const urlObj = new URL(fullUrl);
+    if (!ALLOWED_PROTOCOLS.includes(urlObj.protocol)) {
+      return null;
+    }
+  } catch (e) {
+    return null;
+  }
+  return fullUrl;
 }
 
 export function useRedirectWarning() {
